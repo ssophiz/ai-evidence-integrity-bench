@@ -12,10 +12,16 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-from protocol_v2 import (
-    AUTHORITY_RELATIONS, DECISIONS, EXECUTION_OUTCOMES, SCHEMA_VERSION,
-    VERIFICATION_RELATIONS, validate_dataset,
+from execution_ledger import (
+    LEDGER_SCHEMA_VERSION, PROMPT_FIELDS, SYSTEM_FIELDS, _validate_manifest,
+    export_adjudication_packets, import_records,
 )
+from protocol_v2 import (
+    AUTHORITY_RELATIONS, DECISIONS, SCHEMA_VERSION,
+    SPLITS, VERIFICATION_RELATIONS, model_view, validate_dataset,
+)
+
+REVIEW_OUTCOMES = ("valid", "unadjudicable")
 
 
 def require(condition: bool, message: str) -> None:
@@ -36,38 +42,86 @@ def nonempty(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
-def build_packets(dataset: dict, attempts: dict) -> tuple[dict, dict, dict, dict]:
-    """No semantic judgment is generated. Returned mapping is coordinator-only."""
+def linked_attempts(dataset: dict, frozen: dict, ledger: dict, exported_packets: dict) -> list[dict]:
+    """Rebuild identities and ledger records; hashes alone do not prove linkage."""
     validate_dataset(dataset)
-    object_keys(attempts, {"schema_version", "attempts"}, "attempt adapter")
-    require(attempts["schema_version"] == SCHEMA_VERSION, "unsupported adapter schema")
-    require(isinstance(attempts["attempts"], list) and attempts["attempts"], "attempts must be nonempty")
+    object_keys(frozen, {"schema_version", "kind", "manifest_sha256", "terminal_sha256",
+        "protocol_schema_version", "source_revision", "source_revision_sha256", "system_config_sha256",
+        "system", "export_sha256", "selected_split", "attempt_universe", "replicates", "execution_policy", "attempts"},
+        "frozen manifest")
+    attempts = _validate_manifest(frozen)
+    object_keys(frozen["system"], SYSTEM_FIELDS, "frozen system metadata")
+    require(nonempty(frozen["system"]["system_id"]), "frozen system ID required")
+    require(frozen.get("protocol_schema_version") == SCHEMA_VERSION, "protocol schema mismatch")
+    require(frozen.get("selected_split") in SPLITS, "invalid frozen split")
+    require(type(frozen.get("replicates")) is int and 1 <= frozen["replicates"] <= 100,
+            "invalid frozen replicates")
+    config_hash = frozen.get("system_config_sha256")
+    require(isinstance(config_hash, str) and re.fullmatch(r"[0-9a-f]{64}", config_hash) is not None,
+            "invalid frozen system configuration hash")
+    revision = frozen.get("source_revision")
+    require(isinstance(revision, str) and re.fullmatch(r"[0-9a-f]{40}", revision) is not None, "invalid source revision")
+    revision_hash = hashlib.sha256(revision.encode("ascii")).hexdigest()
+    require(frozen.get("source_revision_sha256") == revision_hash, "source revision hash mismatch")
+    exported = model_view(dataset, frozen["selected_split"])
+    require(digest(exported) == frozen.get("export_sha256"), "private dataset/export hash mismatch")
+    require(frozen.get("attempt_universe") == [case["case_id"] for case in exported["cases"]], "attempt universe mismatch")
+    expected_attempts = []
+    for case in exported["cases"]:
+        for replicate in range(frozen["replicates"]):
+            identity = {"case_id": case["case_id"], "system_config_sha256": config_hash,
+                        "replicate": replicate, "prompt_sha256": digest({key: case[key] for key in PROMPT_FIELDS}),
+                        "exported_case_sha256": digest(case), "source_revision_sha256": revision_hash}
+            attempt_id = "attempt-" + digest(identity)[:24]
+            expected_attempts.append({"sequence": len(expected_attempts), "frozen_stage": "scheduled",
+                "attempt_id": attempt_id, "packet_id": "packet-" + digest({"attempt_id": attempt_id})[:24],
+                "semantic_family_id": case["semantic_family_id"], "language_route": case["language_route"],
+                "path_condition": case["path_condition"], "paired_case_id": case["control_metadata"]["paired_case_id"], **identity})
+    require(digest(attempts) == digest(expected_attempts), "frozen attempt identity/configuration/replicate mismatch")
+    require(isinstance(ledger.get("entries"), list) and all(isinstance(row, dict) for row in ledger["entries"]), "ledger entries required")
+    record_fields = {"attempt_id", "case_id", "stage", "request_number", "retry_number",
+                     "execution_outcome", "raw_response", "raw_response_path", "failure"}
+    rebuilt = import_records(frozen, {"schema_version": LEDGER_SCHEMA_VERSION,
+        "records": [{key: value for key, value in row.items() if key in record_fields} for row in ledger["entries"]]})
+    require(digest(rebuilt) == digest(ledger), "execution ledger linkage or hash mismatch")
+    expected_packets = export_adjudication_packets(exported, frozen, ledger)
+    require(digest(exported_packets) == digest(expected_packets), "blinded packet export/hash/valid-output coverage mismatch")
+    packet_by_id = {row["packet_id"]: row for row in exported_packets["packets"]}
+    return [{**attempt, **entry,
+             "system_id": frozen["system"]["system_id"],
+             "response_text": packet_by_id[attempt["packet_id"]]["response"] if entry["execution_outcome"] == "valid" else None}
+            for attempt, entry in zip(attempts, ledger["entries"])]
+
+
+def build_packets(dataset: dict, frozen: dict, ledger: dict, exported_packets: dict) -> tuple[dict, dict, dict, dict]:
+    """No semantic judgment is generated. Returned mapping is coordinator-only."""
+    attempts = linked_attempts(dataset, frozen, ledger, exported_packets)
     cases = {row["case_id"]: row for row in dataset["cases"]}
-    seen = set()
     masks = set()
     for case in dataset["cases"]:
         masks.update((case["case_id"], case["semantic_family_id"], case["path_condition"],
                       case["control_metadata"]["paired_case_id"],
                       case["control_metadata"]["untrusted_stimulus_id"]))
         masks.update(claim["claim_id"] for claim in case["evaluation"]["claims"])
-    for attempt in attempts["attempts"]:
-        object_keys(attempt, {"attempt_id", "case_id", "system_id", "replicate",
-                              "response_text", "execution_outcome"}, "attempt")
-        require(nonempty(attempt["attempt_id"]) and attempt["attempt_id"] not in seen,
-                "attempt IDs must be nonempty and unique")
-        seen.add(attempt["attempt_id"])
-        require(isinstance(attempt["case_id"], str) and attempt["case_id"] in cases, "unknown case ID")
-        require(nonempty(attempt["system_id"]), "system ID must be nonempty")
-        require(type(attempt["replicate"]) is int and attempt["replicate"] >= 1, "replicate must be positive integer")
-        require(attempt["execution_outcome"] in EXECUTION_OUTCOMES, "invalid execution outcome")
-        require(isinstance(attempt["response_text"], str) or attempt["response_text"] is None,
-                "response_text must be text or null")
-        require(attempt["response_text"] is not None or attempt["execution_outcome"] == "transport_failure",
-                "only transport failure may have null response")
-        masks.update((attempt["attempt_id"], attempt["system_id"]))
+    for attempt in attempts:
+        masks.update((attempt["attempt_id"], attempt["packet_id"], attempt["system_id"],
+                      attempt["system_config_sha256"], attempt["language_route"]))
+    def config_strings(value: Any) -> None:
+        if isinstance(value, str) and value:
+            masks.add(value)
+        elif isinstance(value, dict):
+            for nested in value.values():
+                config_strings(nested)
+        elif isinstance(value, list):
+            for nested in value:
+                config_strings(nested)
+    config_strings(frozen["system"])
     pattern = re.compile("|".join(re.escape(token) for token in sorted(masks, key=lambda x: (-len(x), x))))
     packets, mapping = [], []
-    for attempt in attempts["attempts"]:
+    for attempt in attempts:
+        if attempt["execution_outcome"] != "valid":
+            mapping.append({**attempt, "review_id": None, "claim_map": {}, "masked_occurrences": {}})
+            continue
         case = cases[attempt["case_id"]]
         review_id = "r-" + uuid.uuid4().hex
         claim_map = {"c-" + uuid.uuid4().hex: claim["claim_id"] for claim in case["evaluation"]["claims"]}
@@ -87,8 +141,6 @@ def build_packets(dataset: dict, attempts: dict) -> tuple[dict, dict, dict, dict
 
         packets.append({
             "review_id": review_id,
-            "input_language": case["model_input"]["input_language"],
-            "output_language": case["model_input"]["output_language"],
             "source_claims": [{"source_claim_id": reverse_claims[claim["claim_id"]],
                                "text_en": mask(claim["text_en"]), "text_ko": mask(claim["text_ko"]),
                                "authority_tier": claim["authority_tier"],
@@ -97,7 +149,6 @@ def build_packets(dataset: dict, attempts: dict) -> tuple[dict, dict, dict, dict
             "evidence_text": mask(case["model_input"]["evidence_text"]),
             "untrusted_text": mask(case["model_input"]["untrusted_text"]),
             "response_text": mask(attempt["response_text"]),
-            "reported_execution_outcome": attempt["execution_outcome"],
         })
         mapping.append({"review_id": review_id, **attempt, "claim_map": claim_map,
                         "path_condition": case["path_condition"],
@@ -108,7 +159,10 @@ def build_packets(dataset: dict, attempts: dict) -> tuple[dict, dict, dict, dict
     packet = {"schema_version": SCHEMA_VERSION, "packets": packets}
     packet_hash = digest(packet)
     private = {"schema_version": SCHEMA_VERSION, "packet_sha256": packet_hash,
-               "manifest_sha256": digest(dataset), "adapter_sha256": digest(attempts), "attempts": mapping}
+               "dataset_sha256": digest(dataset), "frozen_manifest_sha256": frozen["manifest_sha256"],
+               "ledger_sha256": ledger["ledger_sha256"], "packet_set_sha256": exported_packets["packet_set_sha256"],
+               "system_config_sha256": frozen["system_config_sha256"],
+               "execution_outcomes": copy.deepcopy(ledger["execution_outcomes"]), "attempts": mapping}
     templates = []
     for slot in ("A", "B"):
         rows = [{"review_id": row["review_id"], "judgment": None, "rationale": None} for row in packets]
@@ -122,20 +176,16 @@ def build_packets(dataset: dict, attempts: dict) -> tuple[dict, dict, dict, dict
 def validate_packet(packet: dict) -> None:
     object_keys(packet, {"schema_version", "packets"}, "packet document")
     require(packet["schema_version"] == SCHEMA_VERSION, "unsupported packet schema")
-    require(isinstance(packet["packets"], list) and packet["packets"], "packets must be nonempty")
+    require(isinstance(packet["packets"], list), "packets must be a list")
     seen = set()
     for row in packet["packets"]:
-        object_keys(row, {"review_id", "input_language", "output_language", "source_claims",
-                          "evidence_text", "untrusted_text", "response_text", "reported_execution_outcome"}, "packet")
+        object_keys(row, {"review_id", "source_claims", "evidence_text", "untrusted_text", "response_text"}, "packet")
         rid = row["review_id"]
         require(isinstance(rid, str) and re.fullmatch(r"r-[0-9a-f]{32}", rid) is not None
                 and rid not in seen, "packet review IDs must be opaque and unique")
         seen.add(rid)
-        require(row["input_language"] in ("en", "ko") and row["output_language"] in ("en", "ko"), "invalid packet language")
         require(nonempty(row["evidence_text"]) and nonempty(row["untrusted_text"]), "packet evidence must be text")
-        require(row["reported_execution_outcome"] in EXECUTION_OUTCOMES, "invalid packet outcome")
-        require(isinstance(row["response_text"], str) or
-                (row["response_text"] is None and row["reported_execution_outcome"] == "transport_failure"), "invalid packet response")
+        require(isinstance(row["response_text"], str), "invalid packet response")
         require(isinstance(row["source_claims"], list) and row["source_claims"], "source claims must be nonempty")
         claim_ids = set()
         for claim in row["source_claims"]:
@@ -152,7 +202,7 @@ def validate_packet(packet: dict) -> None:
 def validate_judgment(value: Any, packet: dict) -> None:
     require(isinstance(value, dict), "human judgment is required")
     outcome = value.get("execution_outcome")
-    require(outcome in EXECUTION_OUTCOMES, "invalid reviewed execution outcome")
+    require(outcome in REVIEW_OUTCOMES, "human review outcome must be valid or unadjudicable; ledger outcomes stay separate")
     if outcome != "valid":
         object_keys(value, {"execution_outcome"}, "non-valid judgment (no semantic labels allowed)")
         return
@@ -295,8 +345,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
     build = commands.add_parser("build")
+    build.add_argument("--dataset", type=Path, required=True)
     build.add_argument("--manifest", type=Path, required=True)
-    build.add_argument("--attempts", type=Path, required=True)
+    build.add_argument("--ledger", type=Path, required=True)
+    build.add_argument("--packets", type=Path, required=True)
     build.add_argument("--output-dir", type=Path, required=True)
     freeze = commands.add_parser("freeze")
     freeze.add_argument("--packet", type=Path, required=True)
@@ -311,7 +363,7 @@ def main() -> None:
     args = parser.parse_args()
     try:
         if args.command == "build":
-            values = build_packets(load(args.manifest), load(args.attempts))
+            values = build_packets(load(args.dataset), load(args.manifest), load(args.ledger), load(args.packets))
             args.output_dir.mkdir(parents=True, exist_ok=False)
             for name, value in zip(("packet.json", "private-map.json", "reviewer-a.json", "reviewer-b.json"), values):
                 write_new(args.output_dir / name, value)
