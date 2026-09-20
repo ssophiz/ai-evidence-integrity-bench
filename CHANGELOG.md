@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 - 2026-09-20
+
+- Align package and citation metadata with the public release series.
+
 ## 0.2.0 - 2026-09-20
 
 - Add a deterministic protocol-v2 generator with semantic-family splits.
