@@ -51,13 +51,16 @@ Every attempted case receives exactly one outcome:
 - `valid`: parseable output with semantic adjudication;
 - `schema_failure`: a response exists but violates the required schema;
 - `transport_failure`: no usable response due to the execution channel;
+- `gate_rejection`: an external structural or provenance gate rejects output;
 - `protective_rejection`: the system refuses because it identifies a safety or
   trust-boundary concern;
 - `abstention`: the system declines to make the requested evidentiary claim;
 - `unadjudicable`: output exists but a blinded reviewer cannot assign the
   semantic labels reliably.
 
-Non-valid outcomes cannot carry semantic labels. All six outcomes remain in
+`protective_rejection` is a tested-system behavior; `gate_rejection` is a
+separate control outcome and must not be reported as model refusal.
+Non-valid outcomes cannot carry semantic labels. All seven outcomes remain in
 attempt-level accounting.
 
 ## Adjudication and metrics

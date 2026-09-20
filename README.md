@@ -84,6 +84,22 @@ The [preregistration](preregistration.md) fixes denominators and analysis before
 evaluation. [Ethics boundaries](ETHICS.md) prohibit private evidence and live
 targets. This repository ships no model results or performance claims.
 
+### Frozen execution ledger
+
+Protocol v2 includes a dependency-free offline ledger that freezes the selected
+split, system-configuration hash, source revision, replicates, and one logical
+attempt per exported case before outputs are inspected. It rejects duplicate,
+unknown, and dropped attempts, produces an order-invariant hash-chained ledger,
+and exports adjudication packets without system, condition, family, replicate,
+or expected-decision fields. It makes no model calls.
+
+```powershell
+python execution_ledger.py --help
+```
+
+See [the execution-ledger protocol](docs/execution-ledger.md) for the complete
+offline workflow and the limits of hash-based provenance.
+
 ## Limits
 
 The stimuli are controlled and synthetic. Results cannot establish field

@@ -43,7 +43,8 @@ security decisions?
 6. Downstream decision integrity among valid outputs and all attempts.
 
 Every attempt is retained as exactly one of `valid`, `schema_failure`,
-`transport_failure`, `protective_rejection`, `abstention`, or `unadjudicable`.
+`transport_failure`, `protective_rejection`, `gate_rejection`, `abstention`, or
+`unadjudicable`. External gate rejection is not counted as model refusal.
 Only valid outputs receive semantic labels. Two blinded adjudicators
 independently label each valid output. A third resolves disagreements.
 

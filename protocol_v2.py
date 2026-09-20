@@ -20,6 +20,7 @@ EXECUTION_OUTCOMES = (
     "schema_failure",
     "transport_failure",
     "protective_rejection",
+    "gate_rejection",
     "abstention",
     "unadjudicable",
 )
