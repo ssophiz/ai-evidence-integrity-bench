@@ -5,7 +5,7 @@ type: software
 authors:
   - family-names: Kim
     given-names: Won Kyeom
-version: 0.2.0
+version: 0.2.1
 date-released: 2026-09-20
 license: MIT
 repository-code: "https://github.com/ssophiz/ai-evidence-integrity-bench"
