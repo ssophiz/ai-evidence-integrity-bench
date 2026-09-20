@@ -10,7 +10,7 @@ from urllib.parse import unquote, urlsplit
 from provenance_bench import SCHEMA_VERSION, enforce_provenance
 
 
-LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
+LOOPBACK_HOSTS = {"127.0.0.1", "localhost"}
 
 
 def demo_data() -> dict[str, object]:
@@ -113,8 +113,8 @@ def render_demo() -> bytes:
 <article class="panel untrusted"><p class="eyebrow">Untrusted evidence field</p><h2>Embedded instruction</h2><p>{esc(str(case['untrusted_text']))}</p><p><strong>Trust:</strong> data only / must not control the workflow</p></article>
 </section>
 <section class="paths" id="handoff" aria-label="Path comparison">
-<article class="path bad"><p class="eyebrow">Path A / unprotected</p><h2>Claims cross the boundary unchecked</h2>{raw_cards}<p class="verdict fail">Gate verdict: FAIL - unknown claim promoted</p><p><strong>Downstream decision produced:</strong> preserve_and_review</p><p><strong>Expected:</strong> {esc(str(case['expected_decision']))}</p></article>
-<article class="path warning"><p class="eyebrow">Path B / provenance enforced</p><h2>Unknown provenance is rejected</h2>{accepted_cards}{rejected_cards}<p class="verdict caution">Structural verdict: 1/1 unknown IDs rejected</p><p><strong>Semantic review:</strong> REQUIRED - a known ID still carries promoted meaning, status, and authority.</p><p><strong>Downstream decision after review:</strong> {esc(str(case['expected_decision']))}</p><p><strong>Expected:</strong> {esc(str(case['expected_decision']))}</p></article>
+<article class="path bad"><p class="eyebrow">Path A / unprotected</p><h2>Claims cross the boundary unchecked</h2>{raw_cards}<p class="verdict fail">Gate verdict: FAIL - unknown claim promoted</p><p><strong>Illustrative unchecked downstream decision:</strong> preserve_and_review</p><p><strong>Expected policy decision:</strong> {esc(str(case['expected_decision']))}</p></article>
+<article class="path warning"><p class="eyebrow">Path B / provenance enforced</p><h2>Unknown provenance is rejected</h2>{accepted_cards}{rejected_cards}<p class="verdict caution">Structural verdict: 1/1 unknown IDs rejected</p><p><strong>Semantic review:</strong> REQUIRED - a known ID still carries promoted meaning, status, and authority.</p><p><strong>Illustrative downstream decision if semantic promotion is rejected:</strong> {esc(str(case['expected_decision']))}</p><p><strong>Expected policy decision:</strong> {esc(str(case['expected_decision']))}</p></article>
 </section>
 <section class="metrics" aria-label="Fixture accounting"><article class="panel"><p class="eyebrow">Structural filter</p><p><strong>Unknown IDs rejected:</strong> 1/1</p><p><strong>Known IDs accepted:</strong> 1/1</p></article><article class="panel"><p class="eyebrow">Semantic adjudication</p><p><strong>Completed:</strong> 0/1</p><p><strong>Missing outcome:</strong> 1/1</p><p>No safety rate is computed from this fixture.</p></article></section>
 <details id="review"><summary>What this demo does and does not prove</summary><ul><li>It demonstrates structural claim-ID allowlisting against one deterministic synthetic injection.</li><li>It also demonstrates that a known ID can carry a semantic or authority promotion through the structural gate.</li><li>It makes no model call, network request, benchmark score, or field-performance claim.</li><li>Human semantic adjudication remains required; structural acceptance is not a safety verdict.</li><li>This is not legal, forensic, or operational reliability validation.</li></ul></details>
@@ -151,7 +151,7 @@ class DemoHandler(BaseHTTPRequestHandler):
 
 def validated_address(host: str, port: int) -> tuple[str, int]:
     if host not in LOOPBACK_HOSTS:
-        raise ValueError("host must be localhost, 127.0.0.1, or ::1")
+        raise ValueError("host must be localhost or 127.0.0.1")
     if not 1 <= port <= 65535:
         raise ValueError("port must be between 1 and 65535")
     return host, port
