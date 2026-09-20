@@ -46,4 +46,7 @@ integrity, attack success, and downstream decision integrity. It does not emit
 model rankings, safety certification, or causal claims.
 
 This page documents the retained v1 format. Protocol v2 has a separate schema
-and export boundary described in [protocol-v2.md](protocol-v2.md).
+and export boundary described in [protocol-v2.md](protocol-v2.md). The current
+pilot redesign uses the incompatible [v3 stage schema](protocol-v3.md), with
+explicit source, worker, and consumer outputs. Old outputs cannot be relabeled
+as v3 executions.
