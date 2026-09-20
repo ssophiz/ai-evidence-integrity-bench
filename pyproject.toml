@@ -1,0 +1,9 @@
+[project]
+name = "ai-evidence-integrity-bench"
+version = "0.1.0"
+description = "Synthetic integrity tests for AI-assisted evidence pipelines"
+requires-python = ">=3.10"
+license = "MIT"
+
+[tool.unittest]
+start-directory = "tests"
