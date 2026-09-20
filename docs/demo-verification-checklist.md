@@ -17,7 +17,7 @@ Record: date and time, operator, Git revision, source changes, Python version, b
 - [ ] The accepted claim still shows promoted status `verified` and authority `artifact`; the semantic-review warning remains visible.
 - [ ] The structural counts are unknown IDs rejected 1/1 and known IDs accepted 1/1.
 - [ ] Semantic accounting is completed 0/1 and missing outcome 1/1. No safety rate is presented.
-- [ ] The presenter explains that decision labels are authored illustration and policy target, with no completed human review or measured downstream model action.
+- [ ] Path B labels its downstream decision as conditional on rejecting semantic promotion. Both paths separately show the expected policy decision; the presenter explains that semantic review is pending and no downstream model action was measured.
 - [ ] The embedded markup is visible as text and does not execute in the browser.
 - [ ] **Reset view** and reload restore the same fixture on the server; no new trial is claimed.
 - [ ] The ten-minute flow has been rehearsed, including the missing-review limitation and the distinction between structural acceptance and semantic faithfulness.

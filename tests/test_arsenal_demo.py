@@ -15,7 +15,15 @@ class ArsenalDemoTests(unittest.TestCase):
         self.assertIn("Semantic review:</strong> REQUIRED", page)
         self.assertIn("Status:</strong> reported", page)
         self.assertIn("Authority:</strong> analyst_note", page)
-        self.assertIn("Expected:</strong> seek_corroboration", page)
+        self.assertIn("Illustrative unchecked downstream decision:", page)
+        self.assertIn(
+            "Illustrative downstream decision if semantic promotion is rejected:", page
+        )
+        self.assertEqual(
+            page.count("Expected policy decision:</strong> seek_corroboration"), 2
+        )
+        self.assertNotIn("Downstream decision after review:", page)
+        self.assertIn("Completed:</strong> 0/1", page)
         self.assertIn("Missing outcome:</strong> 1/1", page)
         self.assertIn("분석관 메모", page)
         self.assertIn("not a recorded model or live-system output", page)
@@ -43,7 +51,8 @@ class ArsenalDemoTests(unittest.TestCase):
 
     def test_bind_address_requires_loopback_and_valid_port(self):
         self.assertEqual(validated_address("127.0.0.1", 8765), ("127.0.0.1", 8765))
-        invalid = (("0.0.0.0", 8765), ("example.com", 8765), ("localhost", 0), ("localhost", 65536))
+        self.assertEqual(validated_address("localhost", 8765), ("localhost", 8765))
+        invalid = (("0.0.0.0", 8765), ("::1", 8765), ("example.com", 8765), ("localhost", 0), ("localhost", 65536))
         for host, port in invalid:
             with self.subTest(host=host, port=port):
                 with self.assertRaises(ValueError):

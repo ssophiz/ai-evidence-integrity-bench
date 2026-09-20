@@ -42,7 +42,7 @@ Prepare the evidence export below and open its `demo.html` while disconnected fr
 | 8:30–9:30 | Show the saved HTML and JSON evidence files. | A reviewer can inspect the exact fixture and structural result without a model account or external connection. |
 | 9:30–10:00 | Return to the input view and state the next research step. | Paired model evaluation and blinded human adjudication are required before reporting model-performance results. Refer to the [preregistration](../preregistration.md). |
 
-The current page labels Path A's illustrative action **Downstream decision produced** and Path B's illustrative expected-policy branch **Downstream decision after review**. Explain that these labels are part of the authored illustration. No downstream model runs, and no semantic adjudication has been completed. The 0/1 review count governs the interpretation.
+Path A labels its authored action **Illustrative unchecked downstream decision**. Path B labels its conditional branch **Illustrative downstream decision if semantic promotion is rejected**. Each path separately shows the **Expected policy decision** from the trusted case. The conditional branch describes what should happen if semantic review rejects the promotion; review is still pending. No downstream model runs, and no semantic adjudication has been completed. The 0/1 review count governs the interpretation.
 
 ## Claims to use precisely
 
