@@ -1,10 +1,12 @@
 # USENIX Security 2027 submission package
 
-Working title: **Evidence Is Not Instruction: Measuring and Preventing Provenance-Laundering Attacks in Agentic Forensic Pipelines**.
+Working title: **Measuring Evidence-Authority Changes in Bilingual Agent Handoffs and Evaluating a Provenance Monitor**.
 
 This is a research and submission plan. It contains no experimental results and is not a submission-ready paper. All study requirements below are proposed commitments until a dated preregistration amendment is frozen before new experiments.
 
-An evidence note can say that a claim is verified without having authority to verify it. This study asks when an agent turns that note into an authoritative finding, and whether an external reference monitor can prevent that promotion across successive handoffs. The security target is the deployed ML pipeline's instruction/data boundary. **Security of ML** is the proposed primary topic, consistent with the venue's treatment of prompt-injection research. Forensics supplies the application and downstream decisions. [Official ML submission guidance](https://www.usenix.org/conference/usenixsecurity27/submitting-ml-work-usenix-security).
+An evidence note can say that a claim is verified without having authority to verify it. This study asks when an agent turns that note into an authoritative finding, and evaluates an external monitor across successive handoffs. The security target is the deployed ML pipeline's instruction/data boundary. **Security of ML** is the proposed primary topic, consistent with the venue's treatment of prompt-injection research. Forensics supplies the application and downstream decisions. [Official ML submission guidance](https://www.usenix.org/conference/usenixsecurity27/submitting-ml-work-usenix-security).
+
+Authority preservation through lossy LLM transformations already has close prior work, particularly [Memory Provenance Laundering and PPMF](https://arxiv.org/abs/2607.29167v1). Evidence-borne injection, information-flow enforcement, and multilingual injection are also established research areas. The candidate contribution is a validated measurement of verification status, source authority, and semantic retention across Korean-English handoffs. Whether that measurement supplies a distinct scientific result remains open; a new application label or combination of existing controls is insufficient.
 
 ## Read and act
 
@@ -12,6 +14,7 @@ An evidence note can say that a claim is verified without having authority to ve
 | --- | --- |
 | [Outline and study design](outline.md) | Freeze the contribution, experiments, and analysis. |
 | [Literature matrix](literature-matrix.md) | Establish what prior work already covers. |
+| [Prior-work and overlap disclosure](prior-work-disclosure.md) | Separate the proposed study from the related poster and disclose reused material. |
 | [Open Science appendix](open-science-appendix.md) | Assemble evidence that another researcher can inspect and rerun. |
 | [Ethics](ethics.md) | Resolve data, participant, and release risks before execution. |
 | [Anonymization checklist](anonymization-checklist.md) | Audit the exact reviewer-facing export. |
@@ -29,6 +32,6 @@ The internal decision is **January 7, 2027**. Official Cycle 2 dates are **Janua
 4. Reserve two independent Korean-English adjudicators and a third resolver. Pilot the rubric on development data and estimate annotation time and model cost.
 5. Open the evidence ledger in [go/no-go](go-no-go.md). A requirement stays pending until its supporting artifact exists.
 
-The existing scaffold does not establish a typed reference monitor, semantic correctness, an effective defense, or field validity. Those remain research questions. The title's word "Preventing" must be narrowed if the completed evidence supports only detection or partial mitigation.
+The existing scaffold does not establish a typed reference monitor, semantic correctness, an effective defense, or field validity. Those remain research questions. Any eventual prevention claim must name the enforced property and its trusted-metadata assumptions, and must distinguish structural enforcement from empirical semantic outcomes.
 
 The current offline tooling already freezes an attempt universe, binds imported outputs to an execution ledger, and prepares independent bilingual review forms with third-reviewer reconciliation. It makes no model calls and supplies no completed human reviews. The expanded corpus, runner, monitor, statistical analysis, and independent evidence still require implementation or collection.
