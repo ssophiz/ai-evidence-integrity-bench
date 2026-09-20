@@ -1,0 +1,24 @@
+# Literature matrix
+
+The proposed contribution must be distinguished from existing prompt-injection benchmarks and information-flow defenses. The comparisons below identify questions to verify in the full papers; they do not establish novelty. Titles and linked primary records were checked on September 20, 2026. Pin the exact versions and record page-level evidence before finalizing the related-work section.
+
+| Primary source | Relevant established work | Comparison required for this study |
+| --- | --- | --- |
+| [Not what you've signed up for: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection](https://arxiv.org/abs/2302.12173) (2023) | Studies malicious instructions carried by externally supplied content. | Treat indirect injection as established; determine whether claim authority across bilingual handoffs adds a distinct measurable failure. |
+| [Formalizing and Benchmarking Prompt Injection Attacks and Defenses](https://www.usenix.org/conference/usenixsecurity24/presentation/liu-yupei) (USENIX Security 2024) | Formalizes injection and evaluates multiple attacks, defenses, models, and tasks. | Map the proposed attacker objective and ASR to its formalism; justify the additional provenance and decision-integrity outcomes. |
+| [InjecAgent: Benchmarking Indirect Prompt Injections in Tool-Integrated Large Language Model Agents](https://arxiv.org/abs/2403.02691) (2024) | Benchmarks indirect injection against agents that consume tool outputs. | Compare placement, threat assumptions, and success criteria; forensic terminology alone does not establish a contribution. |
+| [AgentDojo: A Dynamic Environment to Evaluate Prompt Injection Attacks and Defenses for LLM Agents](https://arxiv.org/abs/2406.13352) (2024) | Evaluates utility and security in agent workflows and supports adaptive evaluation. | Explain why paired claim-level status, authority, and bilingual meaning measurements are needed beyond task success. Compare accounting of benign failures. |
+| [The Instruction Hierarchy: Training LLMs to Prioritize Privileged Instructions](https://arxiv.org/abs/2404.13208) (2024) | Studies training models to respect instruction privilege. | Compare learned instruction priority with external enforcement; do not claim that hierarchy or instruction/data separation is new. |
+| [Defeating Prompt Injections by Design](https://arxiv.org/abs/2503.18813) (2025; CaMeL) | Separates control and data flows and uses capabilities to enforce tool-call security policies. | This is a close defense comparison. State the different protected object, monitor assumptions, semantic limits, and policy guarantees. A provenance label alone is not a novel reference monitor. |
+| [Agent Security Bench (ASB): Formalizing and Benchmarking Attacks and Defenses in LLM-based Agents](https://proceedings.iclr.cc/paper_files/paper/2025/hash/5750f91d8fb9d5c02bd8ad2c3b44456b-Abstract-Conference.html) (ICLR 2025) | Evaluates multiple agent attack surfaces and defenses across models and scenarios. | Check whether the planned multi-hop and adaptive conditions are already represented and what independent scientific question remains. |
+| [Dos and Don'ts of Machine Learning in Computer Security](https://www.usenix.org/conference/usenixsecurity22/presentation/arp) (USENIX Security 2022) | Examines recurring methodological pitfalls in ML security research. | Audit leakage, representative data, baselines, experimental design, and reproducibility before claiming generality. |
+
+## Close the gaps before the go/no-go
+
+For every paper, record its threat model, independent evaluation unit, model diversity, adaptive access, security/utility metrics, semantic judging, and released artifacts. Mark a feature "absent" only after checking the full paper and appendices. Abstract-level silence is not evidence of absence.
+
+Extend the search to integrity lattices, taint/information-flow enforcement, provenance-aware summarization, multilingual semantic evaluation, and newer agent-boundary defenses through the preregistration freeze. Add only verified primary papers. The current matrix is a starting set, not an exhaustive review. Compare applicable strong baselines under matched access and resource assumptions; explain any implementation mismatch.
+
+The candidate distinction is the combination of status/authority non-promotion, semantic preservation, and downstream decisions across bilingual agent boundaries. Treat it as a hypothesis about contribution until the full comparison and completed experiments support it. Rewrite the title and claims if prior work already provides the same mechanism or measurement.
+
+The framing should follow the [official ML submission guidance](https://www.usenix.org/conference/usenixsecurity27/submitting-ml-work-usenix-security): articulate attacker powers, threatened components, generality, and practical security consequences for the deployed ML pipeline.
