@@ -62,7 +62,26 @@ python provenance_bench.py enforce --cases data/cases.json --submissions raw_out
 python provenance_bench.py score --cases data/cases.json --adjudications adjudications.json --output report.json
 ```
 
-## Protocol v2 foundation
+## Protocol v3 pilot redesign
+
+V3 adds 48 authored candidate scenario families, balanced verification/authority
+factorials, clean attack controls, concrete security decisions, and an explicit
+source -> compression worker -> decision consumer contract. Message-only exports
+hide experiment IDs and private answers while supplying the trusted decision
+policy. Frozen records bind consumer input to the actual worker output.
+
+```powershell
+python protocol_v3.py generate --output private/manifest-v3.json
+python protocol_v3.py gate --manifest private/manifest-v3.json --output private/gate-v3.json
+```
+
+**The gate intentionally exits 2 (NO-GO).** These are 48 pilot candidates, not
+the required 600 independently reviewed families. Bilingual/semantic review,
+compression calibration, audited execution, v3 adjudication, and family-cluster
+inference remain blocking. No model results are included. See the
+[v3 protocol and migration](docs/protocol-v3.md) and [preregistration](preregistration.md).
+
+## Protocol v2 foundation (historical)
 
 Protocol v2 adds semantic-family splitting, four Korean/English routes, paired
 direct-source controls, explicit execution outcomes, and denominator-aware
@@ -80,8 +99,8 @@ The private manifest contains reference claims and the expected downstream
 decision. See [the v2 protocol](docs/protocol-v2.md) for outcome definitions,
 metric denominators, and the split policy.
 
-The [preregistration](preregistration.md) fixes denominators and analysis before
-evaluation. [Ethics boundaries](ETHICS.md) prohibit private evidence and live
+The [archived v2 draft](docs/preregistration-v2.md) records the older protocol;
+its corpus and workflow do not satisfy the v3 gates. [Ethics boundaries](ETHICS.md) prohibit private evidence and live
 targets. This repository ships no model results or performance claims.
 
 ### Frozen execution ledger
