@@ -41,3 +41,15 @@ does not prove that rendered text preserves its meaning, verification status,
 or authority.
 
 MIT licensed.
+
+## Offline Arsenal demo
+
+Run the deterministic synthetic comparison locally:
+
+```powershell
+python arsenal_demo.py
+```
+
+Open <http://127.0.0.1:8765>. The page compares the same case through an
+unprotected handoff and the structural provenance gate. It makes no model or
+network calls and reports no model-performance result.
