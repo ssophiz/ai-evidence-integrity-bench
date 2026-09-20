@@ -44,3 +44,6 @@ The scorer emits exact counts and descriptive rates: semantic retention,
 verification-status preservation, authority preservation, joint non-promotion
 integrity, attack success, and downstream decision integrity. It does not emit
 model rankings, safety certification, or causal claims.
+
+This page documents the retained v1 format. Protocol v2 has a separate schema
+and export boundary described in [protocol-v2.md](protocol-v2.md).

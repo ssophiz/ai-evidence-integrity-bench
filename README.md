@@ -62,6 +62,24 @@ python provenance_bench.py enforce --cases data/cases.json --submissions raw_out
 python provenance_bench.py score --cases data/cases.json --adjudications adjudications.json --output report.json
 ```
 
+## Protocol v2 foundation
+
+Protocol v2 adds semantic-family splitting, four Korean/English routes, paired
+direct-source controls, explicit execution outcomes, and denominator-aware
+scoring. It is an experiment specification and fixture generator; the
+repository still contains no model run or performance result.
+
+```powershell
+python protocol_v2.py generate --families 20 --output private/manifest-v2.json
+python protocol_v2.py export-model-inputs --manifest private/manifest-v2.json --split dev --output data/dev-inputs-v2.json
+python protocol_v2.py score --manifest private/manifest-v2.json --adjudications adjudications-v2.json --output report-v2.json
+```
+
+Only the output of `export-model-inputs` may be supplied to a tested system.
+The private manifest contains reference claims and the expected downstream
+decision. See [the v2 protocol](docs/protocol-v2.md) for outcome definitions,
+metric denominators, and the split policy.
+
 The [preregistration](preregistration.md) fixes denominators and analysis before
 evaluation. [Ethics boundaries](ETHICS.md) prohibit private evidence and live
 targets. This repository ships no model results or performance claims.
