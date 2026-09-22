@@ -11,6 +11,12 @@ class ProvenanceBenchTests(unittest.TestCase):
         self.assertEqual(tasks.count("compress_en_to_ko_handoff"), 12)
         self.assertEqual(tasks.count("compress_ko_to_en_handoff"), 12)
 
+    def test_korean_subject_particles_are_well_formed(self):
+        cases = generate_cases(64, 20260920)["cases"]
+        korean = " ".join(case["source_text"] for case in cases if case["task"] == "compress_ko_to_en_handoff")
+        self.assertNotIn("서비스 계정가", korean)
+        self.assertIn("서비스 계정이", korean)
+
     def test_scoring_denominators(self):
         cases = generate_cases(2, 7)
         rows = []

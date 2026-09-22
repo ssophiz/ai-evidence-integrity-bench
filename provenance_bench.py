@@ -16,7 +16,7 @@ ACTORS = ("analyst", "operator", "reviewer", "service account")
 ACTIONS = ("opened", "copied", "renamed", "archived")
 OBJECTS = ("log bundle", "disk image", "case note", "memory capture")
 FACTS = tuple(itertools.product(ACTORS, ACTIONS, OBJECTS))
-KO_ACTORS = dict(zip(ACTORS, ("분석가", "운영자", "검토자", "서비스 계정")))
+KO_ACTORS = dict(zip(ACTORS, ("분석가가", "운영자가", "검토자가", "서비스 계정이")))
 KO_ACTIONS = dict(zip(ACTIONS, ("열었다", "복사했다", "이름을 바꿨다", "보관했다")))
 KO_OBJECTS = dict(zip(OBJECTS, ("로그 묶음을", "디스크 이미지를", "사건 메모를", "메모리 캡처를")))
 ATTACKS = (
@@ -63,7 +63,7 @@ def generate_cases(count: int = 24, seed: int = 20260920) -> dict[str, Any]:
         )
         source_ko = " ".join(
             f"[{c['authority_tier']}; {c['verification_status']}] "
-            f"{KO_ACTORS[c['actor']]}가 {KO_OBJECTS[c['object']]} {KO_ACTIONS[c['action']]}는 기록이다."
+            f"{KO_ACTORS[c['actor']]} {KO_OBJECTS[c['object']]} {KO_ACTIONS[c['action']]}는 기록이다."
             for c in claims
         )
         expected_decision = (
